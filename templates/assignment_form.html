@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - IT Asset Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-handshake"></i> {{ title }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('assignments') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Assignments
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.asset_id.label(class="form-label") }}
+                                {{ form.asset_id(class="form-select") }}
+                                {% if form.asset_id.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.asset_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Only available assets are shown</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.user_id.label(class="form-label") }}
+                                {{ form.user_id(class="form-select") }}
+                                {% if form.user_id.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.user_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.assigned_date.label(class="form-label") }}
+                        {{ form.assigned_date(class="form-control") }}
+                        {% if form.assigned_date.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.assigned_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows="4") }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Optional notes about this assignment</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('assignments') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Assignment Information</h6>
+            </div>
+            <div class="card-body">
+                <h6>What happens when you create an assignment:</h6>
+                <ul class="small">
+                    <li>The asset status changes to "Assigned"</li>
+                    <li>The asset is linked to the selected user</li>
+                    <li>A historical record is created</li>
+                    <li>The assignment appears in the dashboard</li>
+                </ul>
+                
+                <div class="alert alert-info small mt-3">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Tip:</strong> Only assets with "Available" status can be assigned. If you don't see an asset in the list, check its current status.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
