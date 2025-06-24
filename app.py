@@ -394,24 +394,52 @@ def create_user():
     
     return render_template('user_form.html', form=form, title='Create User')
 
-@app.route('/users/<int:id>/edit', methods=['GET', 'POST'])
+@app.route('/users/<int:id>/delete', methods=['POST'])
 @login_required
 def delete_user(id):
     """Delete user (admin only)"""
-    if not current_user.is_admin():
-        flash('Access denied. Admin privileges required.', 'error')
-        return redirect(url_for('users'))
-    
-    if id == current_user.id:
-        flash('You cannot delete your own account.', 'error')
-        return redirect(url_for('users'))
-    
-    user = User.query.get_or_404(id)
-    db.session.delete(user)
-    db.session.commit()
-    
-    flash('User deleted successfully!', 'success')
-    return redirect(url_for('users'))
+    try:
+        if not current_user.is_admin():
+            flash('Access Denied. Admin Privileges Required.', 'error')
+            return redirect('/users')
+        
+        if id == current_user.id:
+            flash('You Cannot Delete Your Own Account.', 'error')
+            return redirect('/users')
+        
+        user = User.query.get_or_404(id)
+        username = user.username
+        
+        # Check if user has active assignments
+        active_assignments = Assignment.query.filter_by(user_id=id, returned_date=None).all()
+        
+        if active_assignments:
+            flash(f'Cannot delete user {username}. They have {len(active_assignments)} active assignment(s). Please return all assets first.', 'error')
+            return redirect('/users')
+        
+        # Unassign any assets
+        assigned_assets = Asset.query.filter_by(assigned_to=id).all()
+        for asset in assigned_assets:
+            asset.assigned_to = None
+            asset.status = 'available'
+        
+        # Delete assignment history
+        user_assignments = Assignment.query.filter_by(user_id=id).all()
+        for assignment in user_assignments:
+            db.session.delete(assignment)
+        
+        # Delete user
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'User {username} deleted successfully!', 'success')
+        return redirect('/users')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting user: {e}")
+        flash('Error deleting user. Please try again.', 'error')
+        return redirect('/users')
 
 # ========================================
 # ASSIGNMENT ROUTES
