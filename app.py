@@ -9,19 +9,19 @@ from wtforms.validators import DataRequired, Length, Optional
 from datetime import datetime, date
 import os
 
-# Initialize Flask app
+# Initialise app
 app = Flask(__name__)
 
-# Configuration - Essential for cloud deployment
+# Configuration - needed for cloud deploy?
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///assets.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Handle Heroku's postgres:// URL format
+# Handle Heroku's postgres:// URL format if I go this route
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://')
 
-# Initialize extensions
+# Initialise extensions
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -55,7 +55,6 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default='regular')  # 'admin' or 'regular'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationship to assignments
     assignments = db.relationship('Assignment', backref='assigned_user', lazy=True)
     
     def set_password(self, password):
@@ -87,7 +86,6 @@ class Asset(db.Model):
     assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
     assignments = db.relationship('Assignment', backref='asset', lazy=True, cascade='all, delete-orphan')
     assigned_user = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_assets')
     
@@ -392,7 +390,7 @@ def create_user():
         db.session.commit()
         
         flash(f'User {user.username} created successfully!', 'success')
-        return redirect('/users')
+        return redirect(url_for('users')) 
     
     return render_template('user_form.html', form=form, title='Create User')
 
@@ -507,7 +505,7 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 # ========================================
-# DATABASE INITIALIZATION
+# DATABASE INITIALISATION
 # ========================================
 
 def create_sample_data():
@@ -609,5 +607,5 @@ if __name__ == '__main__':
             create_sample_data()
     
     # Run the application
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)  # Enable debug mode to see errors
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=True)
